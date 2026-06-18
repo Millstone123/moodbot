@@ -1,77 +1,21 @@
-import { Client, GatewayIntentBits, REST, Routes, ChannelType } from 'discord.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { Client, GatewayIntentBits } from 'discord.js';
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.MessageContent],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent],
 });
 
-const commands = [
-  {
-    name: 'mood',
-    description: 'Manage standup mood polls',
-    options: [
-      {
-        type: 1,
-        name: 'test',
-        description: 'Post a test poll now',
-      },
-      {
-        type: 1,
-        name: 'set-time',
-        description: 'Set poll time',
-        options: [
-          {
-            type: 3,
-            name: 'time',
-            description: 'Time in HH:MM format',
-            required: true,
-          },
-        ],
-      },
-    ],
-  },
-];
+client.once('ready', () => {
+  console.log(`Bot logged in as ${client.user?.tag || 'unknown'}`);
+});
 
-client.once('ready', async () => {
-  console.log(`Logged in as ${client.user.tag}`);
-
-  const guildId = process.env.GUILD_ID;
-  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-
-  try {
-    await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), {
-      body: commands,
-    });
-    console.log('Registered slash commands');
-  } catch (err) {
-    console.error('Failed to register commands:', err);
+client.on('messageCreate', (msg) => {
+  if (msg.content === '!ping') {
+    msg.reply('pong');
   }
 });
 
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === 'mood') {
-    const subcommand = interaction.options.getSubcommand();
-
-    if (subcommand === 'test') {
-      await interaction.reply({
-        content: 'How are you feeling about standup today?',
-        components: [
-          {
-            type: 1,
-            components: [
-              { type: 2, style: 1, emoji: '😄', custom_id: 'mood_great' },
-              { type: 2, style: 1, emoji: '😐', custom_id: 'mood_ok' },
-              { type: 2, style: 1, emoji: '😟', custom_id: 'mood_worried' },
-            ],
-          },
-        ],
-      });
-    }
-  }
-});
-
-client.login(process.env.DISCORD_TOKEN);
+if (process.env.DISCORD_TOKEN) {
+  client.login(process.env.DISCORD_TOKEN);
+} else {
+  console.log('DISCORD_TOKEN not set');
+}
