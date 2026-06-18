@@ -1,0 +1,7 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "bash scripts/preflight.sh": true,
+    "npm install": true,
+    "npm run dev": true
+  }
+}
